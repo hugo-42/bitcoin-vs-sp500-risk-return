@@ -1,0 +1,12 @@
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+.DS_Store
+.vscode/
+# Données lourdes
+data/*.zip
+data/*.Rds
+data/*.rds
+data/*.parquet
+data/*.feather
