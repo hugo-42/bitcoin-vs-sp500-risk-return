@@ -1,0 +1,48 @@
+---
+title: "Bitcoin : risque vs rendement (base R minimal)"
+author: "Hugo Tenerini"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Import des données
+
+```{r}
+btc <- read.csv("data/bitcoin_prices.csv", stringsAsFactors = FALSE)
+btc$date <- as.Date(btc$date)
+btc <- btc[order(btc$date), ]
+head(btc)
+```
+
+## Rendements & métriques
+
+```{r}
+btc$ret_d <- c(NA, diff(btc$close) / head(btc$close, -1))
+btc <- btc[!is.na(btc$ret_d), ]
+
+ann_factor <- sqrt(365)
+ann_return <- (prod(1 + btc$ret_d)^(365 / nrow(btc)) - 1)
+ann_vol     <- sd(btc$ret_d) * ann_factor
+sharpe      <- ifelse(ann_vol == 0, NA, ann_return / ann_vol)
+
+cummax_price <- cummax(btc$close)
+drawdown <- btc$close / cummax_price - 1
+max_dd <- min(drawdown, na.rm = TRUE)
+
+data.frame(
+  ann_return = ann_return,
+  ann_vol = ann_vol,
+  sharpe = sharpe,
+  max_dd = max_dd
+)
+```
+
+## Graphiques (base R)
+
+```{r}
+plot(btc$date, btc$close, type = "l", xlab = "", ylab = "USD", main = "Prix de clôture (Bitcoin)")
+hist(btc$ret_d, breaks = 40, main = "Distribution des rendements journaliers", xlab = "Rendement")
+plot(btc$date, drawdown, type = "l", xlab = "", ylab = "Drawdown", main = "Drawdown (depuis le plus haut)")
+abline(h = 0, lty = 2)
+```
+
